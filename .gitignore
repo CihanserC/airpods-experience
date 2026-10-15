@@ -1,0 +1,13 @@
+node_modules
+dist
+.DS_Store
+*.local
+.vscode
+node_modules/.tmp
+
+# 8K master dosyalar yayına girmez
+sources/**
+!sources/.gitkeep
+
+# Sıkıştırma ara çıktısı
+tmp/
