@@ -1,17 +1,24 @@
-import { useRef } from 'react'
-import { Scene } from './experience/Scene'
-import { ScrollStory } from './scroll/ScrollStory'
-import { useScrollProgress } from './scroll/useScrollProgress'
-import { useCoarseViewport } from './scroll/useViewport'
+import { useSmoothScroll } from './lib/smoothScroll'
+import { useIsMobile } from './lib/viewport'
+import { Loader } from './ui/Loader'
+import { Nav } from './ui/Nav'
+import { Footer, Preorder, Specs } from './ui/Sections'
+import { Story } from './ui/Story'
 
 export default function App() {
-  const sectionRef = useRef<HTMLElement>(null)
-  const { progress } = useScrollProgress(sectionRef)
-  const mobile = useCoarseViewport()
+  useSmoothScroll()
+  const mobile = useIsMobile()
 
   return (
-    <ScrollStory sectionRef={sectionRef}>
-      <Scene progress={progress} mobile={mobile} />
-    </ScrollStory>
+    <>
+      <Loader />
+      <Nav />
+      <main>
+        <Story mobile={mobile} />
+        <Specs />
+        <Preorder />
+      </main>
+      <Footer />
+    </>
   )
 }
