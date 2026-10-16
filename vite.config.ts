@@ -3,6 +3,9 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
+  // GitHub Pages proje sitesi bir alt yolda yayınlanır (/airpods-experience/); iş akışı BASE_PATH verir.
+  // Netlify ve yerel geliştirme için kök (/).
+  base: process.env.BASE_PATH ?? '/',
   plugins: [react(), tailwindcss()],
   assetsInclude: ['**/*.glb', '**/*.ktx2', '**/*.wasm'],
   build: {

@@ -11,8 +11,9 @@ import { setFade } from './materials'
 import { poses, restQuaternion } from './poses'
 import type { ProductParts } from './types'
 
-export const MODEL_URL = '/models/tws_earbuds.glb'
-export const DRACO_PATH = '/draco/'
+// BASE_URL: sitenin yayınlandığı yol (Netlify'da '/', GitHub Pages'te '/airpods-experience/').
+export const MODEL_URL = `${import.meta.env.BASE_URL}models/tws_earbuds.glb`
+export const DRACO_PATH = `${import.meta.env.BASE_URL}draco/`
 
 useGLTF.preload(MODEL_URL, DRACO_PATH)
 

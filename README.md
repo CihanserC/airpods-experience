@@ -1,5 +1,7 @@
 # AURAL AI · Sound Redefined
 
+**Canlı:** https://cihanserc.github.io/airpods-experience/
+
 Kaydırdıkça açılan bir TWS kulaklık lansman sayfası. Kutu kapalı başlar, kapak açılır, kulaklıklar havalanır, sağ kulaklık katman katman patlatılır, sonra birleşip 360° döner.
 
 **Teknoloji:** React 19 + Vite, Three.js, @react-three/fiber, @react-three/drei, @react-three/postprocessing, GSAP + ScrollTrigger, Lenis, Tailwind CSS 4, lucide-react.
@@ -70,4 +72,5 @@ scripts/prepare-model.mjs  düğüm adlarını sahnenin beklediği adlara çevir
 
 ## Yayın
 
-Netlify (`netlify.toml`) ya da Cloudflare Pages (`public/_headers`). `dist` yayınlanır; GLB ve Draco dosyaları bir yıl önbelleğe alınır.
+- **GitHub Pages:** `master`'a her push'ta `.github/workflows/pages.yml` derleyip yayınlar. Site `/airpods-experience/` alt yolunda çalıştığı için iş akışı `BASE_PATH` verir; model ve Draco yolları `import.meta.env.BASE_URL` ile kurulur. Yerelde aynı çıktıyı denemek için: `BASE_PATH=/airpods-experience/ npm run build && BASE_PATH=/airpods-experience/ npm run preview` (Git Bash'te başına `MSYS_NO_PATHCONV=1` ekleyin).
+- **Netlify** (`netlify.toml`) ya da **Cloudflare Pages** (`public/_headers`): kök yolda yayınlanır, `BASE_PATH` gerekmez. GLB ve Draco dosyaları bir yıl önbelleğe alınır.
