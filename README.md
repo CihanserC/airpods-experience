@@ -1,76 +1,76 @@
 # AURAL AI · Sound Redefined
 
-**Canlı:** https://cihanserc.github.io/airpods-experience/
+**Live:** https://cihanserc.github.io/airpods-experience/
 
-Kaydırdıkça açılan bir TWS kulaklık lansman sayfası. Kutu kapalı başlar, kapak açılır, kulaklıklar havalanır, sağ kulaklık katman katman patlatılır, sonra birleşip 360° döner.
+A scroll-driven launch page for TWS earbuds. The case starts closed, the lid opens, the earbuds lift out, the right earbud is exploded layer by layer, then everything reassembles and turns 360°.
 
-**Teknoloji:** React 19 + Vite, Three.js, @react-three/fiber, @react-three/drei, @react-three/postprocessing, GSAP + ScrollTrigger, Lenis, Tailwind CSS 4, lucide-react.
+**Stack:** React 19 + Vite, Three.js, @react-three/fiber, @react-three/drei, @react-three/postprocessing, GSAP + ScrollTrigger, Lenis, Tailwind CSS 4, lucide-react.
 
-## Geliştirme
+## Development
 
 ```bash
 npm install
 npm run dev        # http://localhost:5173
 npm run build      # dist/
-npm run preview    # üretim çıktısını yerelde dener
+npm run preview    # serve the production build locally
 ```
 
 ## Model
 
-Sahne `/public/models/tws_earbuds.glb` dosyasını `useGLTF` ile (Draco) yükler ve şu düğüm adlarını bekler:
+The scene loads `/public/models/tws_earbuds.glb` with `useGLTF` (Draco) and expects these node names:
 
-| Düğüm | Ne |
+| Node | What |
 | --- | --- |
-| `case_body` | Kutu gövdesi |
-| `case_lid` | Kutu kapağı |
-| `earbud_L`, `earbud_R` | Sol ve sağ kulaklık |
-| `part_01_shell` … `part_05_diaphragm` | İsteğe bağlı iç katmanlar (patlatılmış görünüm) |
+| `case_body` | Case body |
+| `case_lid` | Case lid |
+| `earbud_L`, `earbud_R` | Left and right earbud |
+| `part_01_shell` … `part_05_diaphragm` | Optional internal layers (exploded view) |
 
-Elimizdeki kaynak modelde düğüm adları rastgele ve iç katmanlar yok. Bu yüzden:
+The source model has random node names and no internal layers, so:
 
-- `npm run prepare:model` kaynak GLB'deki düğümleri yukarıdaki adlarla yeniden adlandırıp `public/models/tws_earbuds.glb` yazar. Varsayılan girdi `sources/product.glb` (git'e girmez). Yeni bir model gelirse `scripts/prepare-model.mjs` içindeki `RENAME` tablosunu güncelleyin; `--inspect` yalnızca eşleşmeleri ve sınır kutularını yazdırır.
-- Model "açık" pozda gelir (kapak ~115° açık, kulaklıklar havada). `src/three/product/buildFromGltf.ts` kapağı kapatıp gövdenin dış duvarına oturtur, menteşeyi arka üst kenara koyar, kulaklıkları kutunun içine indirir ve her şeyi kapalı kutunun merkezine göre normalize eder.
-- `part_01_shell` sağ kulaklığın kendi mesh'idir (şeffaflaşır). Diğer dört katman modelde yoksa `src/three/product/driverStack.ts` bunları kodda üretir: mikrofon kartı, neodyum mıknatıs, bakır ses bobini, polimer diyafram. Model bu adlarla iç parça içerirse onlar kullanılır.
-- GLB yüklenemezse `buildFallback.ts` aynı yapıyı yuvarlatılmış ilkel geometrilerle kurar; koreografi aynen çalışır.
+- `npm run prepare:model` renames the nodes of the source GLB to the names above and writes `public/models/tws_earbuds.glb`. The default input is `sources/product.glb` (not committed). For a new model, update the `RENAME` table in `scripts/prepare-model.mjs`; `--inspect` only prints the matches and their bounding boxes.
+- The model ships in an "open" pose (lid open about 115°, earbuds floating). `src/three/product/buildFromGltf.ts` closes the lid and seats it on the outer wall of the body, puts the hinge on the back top edge, lowers the earbuds into the case and normalizes everything around the closed case's center.
+- `part_01_shell` is the right earbud's own mesh (it turns transparent). If the model has no other four layers, `src/three/product/driverStack.ts` generates them in code: mic board, neodymium magnet, copper voice coil and polymer diaphragm. If the model contains internal parts with these names, those are used instead.
+- If the GLB fails to load, `buildFallback.ts` builds the same structure from rounded primitives and the choreography still plays.
 
-Ham dokular ve FBX `resources/` altında durur. Ağır master dosyalar `sources/` içinde tutulur ve yayına girmez. Dokuları sıkıştırmak için `npm run optimize:glb -- girdi.glb çıktı.glb` kullanılabilir.
+Raw textures and the FBX live under `resources/`. Heavy master files are kept in `sources/` and are not deployed. To compress textures, use `npm run optimize:glb -- input.glb output.glb`.
 
-## Kaydırma koreografisi
+## Scroll choreography
 
-Tek bir GSAP zaman çizelgesi (`src/scroll/useStoryTimeline.ts`) sahneyi ScrollTrigger ile 5.5 ekran boyunca pinler ve scrub eder. Aynı çizelge hem 3D durumu (`src/lib/anim.ts`) hem DOM katmanlarını sürer; kaydırma sırasında hiçbir React bileşeni yeniden render olmaz.
+A single GSAP timeline (`src/scroll/useStoryTimeline.ts`) pins the stage with ScrollTrigger for 5.5 screen heights and scrubs it. The same timeline drives both the 3D state (`src/lib/anim.ts`) and the DOM layers; no React component re-renders while scrolling.
 
-| Kaydırma | Olan |
+| Scroll | What happens |
 | --- | --- |
-| %0 | Kapalı kutu, loş stüdyo ışığı, "SOUND / REDEFINED" ürünün arkasında |
-| ~%25 | Kapak 90° açılır, kulaklıklar süzülerek yükselir, kutu loşlaşıp geri çekilir ve silikleşir |
-| %50…%75 | Sağ kulaklık odakta, kabuk şeffaflaşır, beş katman Z ekseninde sırayla açılır, her birine HUD kartı bağlanır |
-| %100 | Katmanlar birleşir, 360° dönüş, "Pre-Order Now" ve "Explore Specs" |
+| 0% | Closed case, low studio light, "SOUND / REDEFINED" behind the product |
+| ~25% | The lid opens 90°, the earbuds float up, the case dims, pulls back and fades |
+| 50%…75% | The right earbud takes focus, its shell turns transparent, five layers open one by one along Z, each with its own HUD card |
+| 100% | The layers reassemble, a 360° turn, "Pre-Order Now" and "Explore Specs" |
 
-Kamera pozları zaman çizelgesindeki `cameras` nesnesinde, kulaklık pozları `src/three/product/poses.ts` içindedir.
+Camera poses live in the `cameras` object of the timeline; earbud poses live in `src/three/product/poses.ts`.
 
-## Dosyalar
+## Files
 
 ```
 src/
-  content.ts               bütün metinler (hero, bölümler, HUD kartları, özellikler)
-  lib/                     anim durumu, Lenis, HUD köprüsü, viewport
-  scroll/                  GSAP zaman çizelgesi
-  three/                   Canvas, ışık, efektler, kamera, HUD izdüşümü
-  three/product/           GLB ayrıştırma, yedek geometri, iç katmanlar, malzemeler, pozlar
-  ui/                      Nav, pinlenmiş sahne, HUD, bölümler, yükleme ekranı
-scripts/prepare-model.mjs  düğüm adlarını sahnenin beklediği adlara çevirir
+  content.ts               all copy (hero, chapters, HUD cards, specs)
+  lib/                     animation state, Lenis, HUD bridge, viewport
+  scroll/                  GSAP timeline
+  three/                   Canvas, lighting, effects, camera, HUD projection
+  three/product/           GLB parsing, fallback geometry, internal layers, materials, poses
+  ui/                      Nav, pinned stage, HUD, sections, loader
+scripts/prepare-model.mjs  renames nodes to the names the scene expects
 ```
 
-## Performans ve erişilebilirlik
+## Performance and accessibility
 
-- Piksel oranı `Math.min(devicePixelRatio, 2)`; mobilde bloom hafif, multisampling kapalı.
-- Yansıma ortamı Lightformer'larla kodda üretilir, ağdan HDR indirilmez.
-- three ve R3F ayrı parçalarda (manualChunks) önbelleğe alınır.
-- Dar ekranlarda kamera otomatik geri çekilir; dikey ekranda odak sahnesi HUD kartına yer açmak için hafifçe yukarı kayar.
-- `prefers-reduced-motion: reduce`: pin ve animasyon yok, kapalı ürün ve CTA sabit görünür, Lenis kapalı.
-- Ürün bir tasarım konseptidir; "Pre-Order" bölümü sipariş almaz ve bunu açıkça yazar.
+- Pixel ratio is capped at `Math.min(devicePixelRatio, 2)`; on mobile, bloom is lighter and multisampling is off.
+- The reflection environment is built in code with Lightformers; no HDR file is downloaded.
+- three and R3F are split into separate chunks (manualChunks) and cached independently.
+- On narrow screens the camera pulls back automatically; in portrait the focus scene shifts up slightly to make room for the HUD card.
+- `prefers-reduced-motion: reduce`: no pinning or animation, the closed product and the CTAs stay static, Lenis is off.
+- The product is a design concept; the "Pre-Order" section takes no orders and says so.
 
-## Yayın
+## Deployment
 
-- **GitHub Pages:** `master`'a her push'ta `.github/workflows/pages.yml` derleyip yayınlar. Site `/airpods-experience/` alt yolunda çalıştığı için iş akışı `BASE_PATH` verir; model ve Draco yolları `import.meta.env.BASE_URL` ile kurulur. Yerelde aynı çıktıyı denemek için: `BASE_PATH=/airpods-experience/ npm run build && BASE_PATH=/airpods-experience/ npm run preview` (Git Bash'te başına `MSYS_NO_PATHCONV=1` ekleyin).
-- **Netlify** (`netlify.toml`) ya da **Cloudflare Pages** (`public/_headers`): kök yolda yayınlanır, `BASE_PATH` gerekmez. GLB ve Draco dosyaları bir yıl önbelleğe alınır.
+- **GitHub Pages:** on every push to `master`, `.github/workflows/pages.yml` builds and deploys the site. Because the site runs under the `/airpods-experience/` sub-path, the workflow sets `BASE_PATH`; model and Draco URLs are built from `import.meta.env.BASE_URL`. To try the same output locally: `BASE_PATH=/airpods-experience/ npm run build && BASE_PATH=/airpods-experience/ npm run preview` (in Git Bash, prefix it with `MSYS_NO_PATHCONV=1`).
+- **Netlify** (`netlify.toml`) or **Cloudflare Pages** (`public/_headers`): served from the root path, no `BASE_PATH` needed. GLB and Draco files are cached for one year.
